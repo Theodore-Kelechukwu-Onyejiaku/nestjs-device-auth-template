@@ -1,0 +1,39 @@
+version: '3.7'
+services:
+    postgres:
+      image: postgres:13-alpine
+      restart: always
+      env_file:
+        - .env
+      environment:
+        - POSTGRES_USER=$POSTGRES_USER
+        - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      ports:
+        - "$POSTGRES_PORT:$POSTGRES_PORT_DOCKER"
+
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
+      networks:
+        - db_network
+
+    redis: 
+        image: redis       
+        container_name: our_redis
+        command: redis-server --save 60 1 --loglevel warning 
+        env_file:   
+          - .env   
+        environment: 
+          - ALLOW_EMPTY_PASSWORD=yes
+          - REDIS_REPLICATION_MODE=master
+        ports:
+          - "6379:6379"
+        hostname: redis
+        restart: always
+        depends_on:
+          - postgres
+
+volumes:
+  postgres_data:
+
+networks:
+  db_network:
